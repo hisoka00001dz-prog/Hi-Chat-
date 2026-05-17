@@ -2,7 +2,7 @@
   "name": "hi Chat",
   "short_name": "hi Chat",
   "description": "شات لحظي مع صحابك",
-  "start_url": "./hi-chat.html",
+  "start_url": "./hi-chat-22.html",
   "display": "standalone",
   "background_color": "#0c0c13",
   "theme_color": "#ff5a24",
@@ -11,12 +11,14 @@
     {
       "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
