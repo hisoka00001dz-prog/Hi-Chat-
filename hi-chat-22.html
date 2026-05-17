@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>hi Chat 💬</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ff5a24">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script>
+const _fb = firebase.initializeApp({
+  apiKey: "AIzaSyD-50TYjnjzceLaF3Bms-UYBgpqEiqkces",
+  authDomain: "hi-chat-5a0c8.firebaseapp.com",
+  projectId: "hi-chat-5a0c8",
+  storageBucket: "hi-chat-5a0c8.firebasestorage.app",
+  messagingSenderId: "99604990742",
+  appId: "1:99604990742:web:b8df44d5889a4b1f9e5e37"
+});
+const db = firebase.firestore();
+const storage = firebase.storage();
+</script>
+
+<style>
+:root{
+  --bg:#0c0c13;--surface:#16161f;--surface2:#1f1f2e;--surface3:#27273a;
+  --border:#2f2f46;--accent:#ff5a24;--accent2:#7b2fff;--accent3:#00c896;
+  --text:#eeeef8;--text2:#a0a0c0;--muted:#58587a;
+  --bme-a:#ff5a24;--bme-b:#ff2d6f;--shadow:rgba(0,0,0,.55);
+  --ar:'Cairo',sans-serif;--en:'Poppins',sans-serif
+}
+[data-theme=light]{
+  --bg:#f0f0f9;--surface:#fff;--surface2:#eeeef8;--surface3:#e4e4f4;
+  --border:#d4d4ec;--text:#18182c;--text2:#505070;--muted:#8888b0;--shadow:rgba(0,0,0,.1)
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{overscroll-behavior:none}
+body{font-family:var(--ar);background:var(--bg);color:var(--text);
+  height:100dvh;display:flex;flex-direction:column;overflow:hidden;
+  transition:background .3s,color .3s;padding-bottom:env(safe-area-inset-bottom)}
+body.ltr{font-family:var(--en)}
+.screen{display:none;flex-direction:column;height:100dvh}
+.screen.active{display:flex}
+
+.lang-btn{background:var(--surface2);border:1.5px solid var(--border);color:var(--text);
+  font-size:.7rem;font-weight:700;padding:4px 9px;border-radius:20px;cursor:pointer;transition:all .2s}
+.lang-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.theme-btn{background:var(--surface2);border:1.5px solid var(--border);color:var(--text);
+  font-size:.85rem;padding:4px 9px;border-radius:20px;cursor:pointer;transition:all .2s}
+
+#joinScreen{align-items:center;justify-content:flex-start;gap:14px;
+  padding:0 20px 24px;overflow-y:auto;
+  background:radial-gradient(ellipse at 20% 10%,rgba(123,47,255,.18) 0%,transparent 55%),
+             radial-gradient(ellipse at 80% 90%,rgba(255,90,36,.13) 0%,transparent 55%),var(--bg)}
+.logo{font-size:2.6rem;font-weight:900;
+  background:linear-gradient(135deg,#ff5a24,#ff2d6f,#7b2fff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  text-align:center;line-height:1.1}
+.logo-sub{color:var(--muted);font-size:.87rem;text-align:center}
+.av-picker{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;max-width:340px}
+.av-opt{font-size:1.65rem;width:44px;height:44px;border-radius:50%;
+  border:2px solid transparent;background:var(--surface2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .2s;user-select:none}
+.av-opt.sel{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,90,36,.2);transform:scale(1.1)}
+.form{display:flex;flex-direction:column;gap:11px;width:100%;max-width:340px}
+.lbl{font-size:.7rem;color:var(--muted);margin-bottom:-6px;font-weight:700;
+  letter-spacing:1px;text-transform:uppercase}
+input[type=text],input[type=password]{
+  background:var(--surface2);border:1.5px solid var(--border);color:var(--text);
+  padding:12px 15px;border-radius:13px;font-family:inherit;font-size:.95rem;
+  outline:none;transition:border-color .2s,box-shadow .2s;width:100%}
+input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,90,36,.12)}
+input.err{border-color:#ff2d6f!important;box-shadow:0 0 0 3px rgba(255,45,111,.12)!important}
+.ferr{font-size:.71rem;color:#ff6b9d;display:none;padding:0 2px}
+.ferr.show{display:block}
+.btn{background:linear-gradient(135deg,#ff5a24,#ff2d6f);color:#fff;border:none;
+  padding:13px;border-radius:13px;font-family:inherit;font-size:1rem;font-weight:700;
+  cursor:pointer;transition:all .2s;width:100%}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,90,36,.35)}
+.btn:active{transform:translateY(0)}
+.btn:disabled{opacity:.55;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+.btn2{background:var(--surface2);color:var(--text);border:1.5px solid var(--border);
+  padding:12px;border-radius:13px;font-family:inherit;font-size:.95rem;font-weight:600;
+  cursor:pointer;transition:all .2s;width:100%}
+.btn2:hover{border-color:var(--accent2);color:#b39dff}
+.btn2:disabled{opacity:.55;cursor:not-allowed}
+.divider{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.8rem;
+  width:100%;max-width:340px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.pstr{height:3px;border-radius:2px;margin-top:-8px;transition:all .3s;background:var(--border);width:0%}
+.pstr.w{background:#ff2d6f;width:33%}.pstr.f{background:#ffd060;width:66%}.pstr.s{background:var(--accent3);width:100%}
+
+.topbar{display:flex;align-items:center;gap:6px;padding:8px 10px;
+  background:var(--surface);border-bottom:1px solid var(--border);z-index:20;flex-shrink:0}
+.ibtn{background:var(--surface2);border:1px solid var(--border);color:var(--text);
+  width:34px;height:34px;border-radius:10px;cursor:pointer;font-size:.9rem;
+  display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.ibtn:hover{border-color:var(--accent)}
+.rinfo{flex:1;min-width:0;overflow:hidden}
+.rname{font-weight:700;font-size:.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rcode{font-size:.7rem;color:var(--muted);background:var(--surface2);
+  border:1px solid var(--border);padding:2px 6px;border-radius:20px;font-weight:700;
+  letter-spacing:1.5px;cursor:pointer;transition:all .2s;display:inline-block;margin-top:2px}
+.rcode:hover{border-color:var(--accent3);color:var(--accent3)}
+.obadge{font-size:.7rem;color:var(--accent3);display:flex;align-items:center;gap:4px;margin-top:2px}
+.odot{width:6px;height:6px;border-radius:50%;background:var(--accent3);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+.mstrip{display:flex;gap:7px;padding:8px 14px;overflow-x:auto;scrollbar-width:none;
+  border-bottom:1px solid var(--border);background:rgba(22,22,31,.7);
+  min-height:40px;align-items:center;flex-shrink:0}
+.mstrip::-webkit-scrollbar{display:none}
+.mchip{display:flex;align-items:center;gap:5px;background:var(--surface2);
+  border:1px solid var(--border);padding:4px 10px 4px 7px;border-radius:30px;
+  font-size:.78rem;white-space:nowrap;flex-shrink:0}
+.mchip.me{border-color:var(--accent);background:rgba(255,90,36,.08)}
+.tbar{min-height:17px;font-size:.71rem;color:var(--muted);padding:2px 16px 3px;
+  font-style:italic;flex-shrink:0}
+
+#messages{flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;
+  gap:4px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;overscroll-behavior:contain}
+.mrow{display:flex;align-items:flex-end;gap:7px;animation:fadeUp .24s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.mrow.me{flex-direction:row-reverse}
+.mav{font-size:1.05rem;width:28px;height:28px;border-radius:50%;background:var(--surface2);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1.5px solid var(--border)}
+.mwrap{max-width:76%;display:flex;flex-direction:column}
+.mrow.me .mwrap{align-items:flex-end}
+.msender{font-size:.67rem;color:var(--muted);margin-bottom:2px;padding:0 4px}
+.mbubble{padding:9px 12px;border-radius:14px;font-size:.89rem;line-height:1.55;
+  word-break:break-word;position:relative;cursor:pointer;user-select:none}
+.mrow:not(.me) .mbubble{background:var(--surface2);border:1px solid var(--border);border-bottom-right-radius:4px}
+.mrow.me .mbubble{background:linear-gradient(135deg,var(--bme-a),var(--bme-b));
+  border-bottom-left-radius:4px;color:#fff}
+body.ltr .mrow:not(.me) .mbubble{border-bottom-right-radius:14px;border-bottom-left-radius:4px}
+body.ltr .mrow.me .mbubble{border-bottom-left-radius:14px;border-bottom-right-radius:4px}
+.mtime{font-size:.6rem;color:var(--muted);margin-top:2px;padding:0 5px}
+.mrow.me .mtime{color:rgba(255,255,255,.5)}
+.rxns{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px;padding:0 2px}
+.rxnchip{background:var(--surface2);border:1px solid var(--border);border-radius:20px;
+  padding:2px 8px;font-size:.79rem;cursor:pointer;transition:all .15s}
+.rxnchip.mine{background:rgba(255,90,36,.15);border-color:var(--accent)}
+.sysmsg{text-align:center;font-size:.71rem;color:var(--muted);padding:6px 0;
+  display:flex;align-items:center;justify-content:center;gap:8px}
+.sysmsg::before,.sysmsg::after{content:'';flex:1;height:1px;background:var(--border);max-width:40px}
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;color:var(--muted);font-size:.88rem;text-align:center;padding:30px}
+.rplyprv{background:var(--surface3);border-radius:6px;padding:5px 8px;font-size:.76rem;
+  color:var(--muted);margin-bottom:5px;border-right:2px solid var(--accent2)}
+body.ltr .rplyprv{border-right:none;border-left:2px solid var(--accent2)}
+.editmark{font-size:.6rem;color:var(--muted);font-style:italic;margin-right:4px}
+
+.macpop{display:none;position:absolute;top:-42px;gap:2px;background:var(--surface);
+  border:1px solid var(--border);border-radius:9px;padding:4px 6px;
+  box-shadow:0 4px 16px var(--shadow);white-space:nowrap;z-index:10}
+.mrow:not(.me) .macpop{left:0}.mrow.me .macpop{right:0}
+.mbubble:hover .macpop,.mbubble:focus .macpop{display:flex}
+.macpop button{background:none;border:none;cursor:pointer;font-size:.85rem;
+  padding:3px 5px;border-radius:5px;color:var(--text)}
+.macpop button:hover{background:var(--surface2)}
+
+.rxnpop{background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:9px;box-shadow:0 8px 32px var(--shadow);display:none;gap:5px;
+  flex-wrap:wrap;max-width:230px;position:fixed;z-index:9999}
+.rxnpop.open{display:flex;animation:fadeUp .15s ease}
+.rxnpop span{font-size:1.35rem;cursor:pointer;padding:3px;border-radius:7px;transition:transform .14s}
+.rxnpop span:hover{transform:scale(1.3)}
+
+.iarea{padding:10px 12px;background:var(--surface);border-top:1px solid var(--border);
+  display:flex;flex-direction:column;gap:8px;flex-shrink:0;position:relative}
+.rplybar{display:none;align-items:center;gap:7px;background:var(--surface2);
+  border-right:3px solid var(--accent2);border-radius:8px;padding:7px 10px;
+  font-size:.78rem;color:var(--text2)}
+body.ltr .rplybar{border-right:none;border-left:3px solid var(--accent2)}
+.rplybar.show{display:flex}
+.rplytext{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.irow{display:flex;gap:8px;align-items:flex-end}
+.minput{flex:1;background:var(--surface2);border:1.5px solid var(--border);color:var(--text);
+  padding:10px 14px;border-radius:13px;font-family:inherit;font-size:.9rem;outline:none;
+  resize:none;max-height:100px;overflow-y:auto;transition:border-color .2s;
+  scrollbar-width:none;line-height:1.5}
+.minput:focus{border-color:var(--accent)}
+.minput::placeholder{color:var(--muted)}
+.abtn{width:40px;height:40px;border-radius:11px;border:1.5px solid var(--border);
+  background:var(--surface2);color:var(--text);cursor:pointer;font-size:1.05rem;
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.abtn:hover{border-color:var(--accent)}
+.sbtn{width:40px;height:40px;border-radius:11px;border:none;
+  background:linear-gradient(135deg,#ff5a24,#ff2d6f);color:#fff;cursor:pointer;
+  font-size:1.1rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.sbtn:hover{transform:scale(1.08);box-shadow:0 4px 16px rgba(255,90,36,.4)}
+.sbtn:active{transform:scale(.94)}
+.epicker{display:none;flex-wrap:wrap;gap:5px;padding:11px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:14px;
+  position:absolute;bottom:68px;right:12px;z-index:100;
+  box-shadow:0 8px 32px var(--shadow);max-width:275px}
+body.ltr .epicker{right:auto;left:12px}
+.epicker.open{display:flex;animation:fadeUp .18s ease}
+.eitem{font-size:1.28rem;cursor:pointer;padding:3px;border-radius:7px;transition:transform .14s}
+.eitem:hover{transform:scale(1.3)}
+.scrbtn{position:fixed;bottom:78px;left:50%;transform:translateX(-50%);
+  background:var(--accent2);color:#fff;border:none;padding:7px 15px;border-radius:30px;
+  font-family:inherit;font-size:.77rem;cursor:pointer;display:none;z-index:50;
+  box-shadow:0 4px 16px rgba(123,47,255,.4)}
+
+.toast{position:fixed;bottom:86px;left:50%;transform:translateX(-50%) translateY(20px);
+  padding:9px 18px;border-radius:30px;font-size:.81rem;font-weight:700;
+  opacity:0;transition:all .3s;z-index:9999;pointer-events:none;
+  white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{background:var(--accent3);color:#0a0a12}
+.toast.err{background:#ff2d6f;color:#fff}
+
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);
+  z-index:9998;align-items:center;justify-content:center;padding:20px}
+.modal-ov.open{display:flex}
+.modal{background:var(--surface);border:1.5px solid var(--border);border-radius:18px;
+  padding:22px;width:100%;max-width:340px;display:flex;flex-direction:column;gap:14px}
+.modal h3{font-size:1rem;font-weight:700}
+.modal-btns{display:flex;gap:10px}
+.modal-btns .btn,.modal-btns .btn2{padding:10px}
+.mav img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.msgimg{max-width:220px;max-height:220px;border-radius:10px;cursor:pointer;display:block;object-fit:cover}
+.imgloading{width:120px;height:80px;background:var(--surface3);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.8rem}
+@media(max-width:400px){.mwrap{max-width:83%}.epicker{right:8px;max-width:260px}}
+</style>
+</head>
+<body data-theme="dark">
+
+
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-ov" id="cmodal">
+  <div class="modal">
+    <h3 id="cmtitle">تأكيد</h3>
+    <p id="cmmsg" style="font-size:.88rem;color:var(--text2)"></p>
+    <div class="modal-btns">
+      <button class="btn" id="cmok">تأكيد</button>
+      <button class="btn2" onclick="document.getElementById('cmodal').classList.remove('open')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<div class="rxnpop" id="rxnpop">
+  <span onclick="doRxn('❤️')">❤️</span>
+  <span onclick="doRxn('😂')">😂</span>
+  <span onclick="doRxn('🔥')">🔥</span>
+  <span onclick="doRxn('👍')">👍</span>
+  <span onclick="doRxn('😮')">😮</span>
+  <span onclick="doRxn('😢')">😢</span>
+  <span onclick="doRxn('💯')">💯</span>
+  <span onclick="doRxn('✅')">✅</span>
+</div>
+
+<!-- JOIN SCREEN -->
+<div id="joinScreen" class="screen active">
+  <!-- Lang + Theme bar inside join screen -->
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;flex-shrink:0">
+    <div style="display:flex;gap:4px">
+      <button class="lang-btn active" id="lbtn_ar" onclick="setLang('ar')">عر</button>
+      <button class="lang-btn" id="lbtn_en" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" id="lbtn_fr" onclick="setLang('fr')">FR</button>
+    </div>
+    <button class="theme-btn" id="themebtn" onclick="toggleTheme()">🌙</button>
+  </div>
+  <div class="logo">hi Chat 💬</div>
+  <div class="logo-sub" id="txt_sub">شات لحظي مع صحابك — من أي جهاز</div>
+
+  <!-- Avatar Upload -->
+  <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+    <div id="avatarPreview" style="width:72px;height:72px;border-radius:50%;background:var(--surface2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:2rem;cursor:pointer;overflow:hidden;position:relative" onclick="document.getElementById('avatarInput').click()">
+      <span id="avatarEmoji">😎</span>
+      <img id="avatarImg" style="display:none;width:100%;height:100%;object-fit:cover;position:absolute;inset:0" />
+      <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.5);font-size:.6rem;color:#fff;text-align:center;padding:2px">📷</div>
+    </div>
+    <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="previewAvatar(event)">
+    <div style="font-size:.7rem;color:var(--muted)">اضغط لتغيير الصورة</div>
+  </div>
+
+  <div class="av-picker" id="avpicker">
+    <div class="av-opt sel" data-e="😎">😎</div>
+    <div class="av-opt" data-e="🐱">🐱</div>
+    <div class="av-opt" data-e="🐻">🐻</div>
+    <div class="av-opt" data-e="🦊">🦊</div>
+    <div class="av-opt" data-e="🐼">🐼</div>
+    <div class="av-opt" data-e="🦁">🦁</div>
+    <div class="av-opt" data-e="🐸">🐸</div>
+    <div class="av-opt" data-e="🐯">🐯</div>
+    <div class="av-opt" data-e="🦅">🦅</div>
+    <div class="av-opt" data-e="🐺">🐺</div>
+    <div class="av-opt" data-e="🦋">🦋</div>
+    <div class="av-opt" data-e="🐲">🐲</div>
+  </div>
+
+  <div class="form">
+    <div class="lbl" id="txt_lname">اسمك</div>
+    <input type="text" id="uname" maxlength="20" autocomplete="off" placeholder="أدخل اسمك...">
+    <div class="ferr" id="err_name"></div>
+
+    <div class="lbl" id="txt_lroom">كود الغرفة (للانضمام)</div>
+    <input type="text" id="roomid" maxlength="6" autocomplete="off"
+      style="letter-spacing:3px;text-transform:uppercase"
+      oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"
+      placeholder="AB12XY">
+    <div class="ferr" id="err_room"></div>
+
+    <div class="lbl" id="txt_lpass">كلمة مرور الغرفة (اختياري)</div>
+    <input type="password" id="passin" maxlength="30" oninput="updPstr(this.value)"
+      placeholder="اتركها فاضية إذا ما تبي">
+    <div class="pstr" id="pstr"></div>
+
+    <button class="btn" id="joinbtn" onclick="doJoin()">ادخل الشات 🚀</button>
+    <div class="divider" id="txt_or">أو</div>
+    <button class="btn2" id="createbtn" onclick="doCreate()">أنشئ غرفة جديدة ✨</button>
+  </div>
+</div>
+
+<!-- ROOM SCREEN -->
+<div id="roomScreen" class="screen">
+  <div class="topbar">
+    <button class="ibtn" onclick="doLeave()" title="رجوع">←</button>
+    <div class="rinfo">
+      <div style="display:flex;align-items:center;gap:6px;min-width:0">
+        <span class="rname" id="rname"></span>
+        <span class="rcode" id="rcode" onclick="copyCode()"></span>
+      </div>
+      <div class="obadge"><span class="odot"></span><span id="ocnt">0</span> <span id="txt_online">أونلاين</span></div>
+    </div>
+    <div style="display:flex;gap:4px;flex-shrink:0;align-items:center">
+      <button class="ibtn" id="adminBtn" onclick="toggleAdminPanel()" style="display:none" title="لوحة الأدمن">👑</button>
+      <button class="ibtn" onclick="toggleTheme()" id="roomThemeBtn" title="ثيم">🌙</button>
+      <button class="ibtn" onclick="doLeave()" title="خروج">🚪</button>
+    </div>
+  </div>
+
+  <!-- Admin Panel -->
+  <div id="adminPanel" style="display:none;background:var(--surface2);border-bottom:1px solid var(--border);padding:10px 14px;gap:8px;flex-wrap:wrap;flex-direction:row">
+    <button class="abtn" onclick="adminRename()" style="font-size:.75rem;width:auto;padding:6px 12px">✏️ اسم الغرفة</button>
+    <button class="abtn" id="lockBtn" onclick="adminToggleLock()" style="font-size:.75rem;width:auto;padding:6px 12px">🔒 قفل</button>
+    <button class="abtn" onclick="adminClearAll()" style="font-size:.75rem;width:auto;padding:6px 12px;color:#ff6b9d">🗑 حذف الكل</button>
+  </div>
+
+  <div class="mstrip" id="mstrip"></div>
+  <div class="tbar" id="tbar"></div>
+
+  <div id="messages">
+    <div class="empty" id="emptyState">
+      <div style="font-size:2.5rem">💬</div>
+      <div id="txt_empty">لا رسائل بعد — ابدأ المحادثة!</div>
+    </div>
+  </div>
+
+  <button class="scrbtn" id="scrbtn" onclick="scrollBot(true)">↓ رسائل جديدة</button>
+
+  <div class="iarea">
+    <div class="rplybar" id="rplybar">
+      <span style="color:var(--accent2);font-size:.8rem">↩</span>
+      <span class="rplytext" id="rplytext"></span>
+      <button onclick="clearReply()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem;padding:0 4px">✕</button>
+    </div>
+    <div class="irow">
+      <button class="abtn" onclick="toggleEmoji()" title="إيموجي">😊</button>
+      <button class="abtn" onclick="document.getElementById('imgInput').click()" title="صورة">🖼️</button>
+      <input type="file" id="imgInput" accept="image/*" style="display:none" onchange="sendImage(event)">
+      <textarea class="minput" id="minput" rows="1"
+        placeholder="اكتب رسالة..."
+        oninput="autoResize(this);handleTyping()"
+        onkeydown="handleKey(event)"></textarea>
+      <button class="sbtn" onclick="sendMsg()">➤</button>
+    </div>
+    <div class="epicker" id="epicker"></div>
+  </div>
+</div>
+
+<script>
+// ========== STATE ==========
+let myId = 'u_' + Math.random().toString(36).slice(2,10);
+let myName = '';
+let myAvatar = '😎';
+let myAvatarUrl = '';
+let roomId = '';
+let roomPass = '';
+let isAdmin = false;
+let roomLocked = false;
+let mutedUsers = {};
+let editingId = null;
+let replyTo = null;
+let unsubMsgs = null;
+let unsubRoom = null;
+let typingTimer = null;
+let atBottom = true;
+let avatarFile = null;
+
+// ========== LANGS ==========
+const LANGS = {
+  ar:{
+    sub:'شات لحظي مع صحابك — من أي جهاز',
+    lname:'اسمك', lroom:'كود الغرفة (للانضمام)',
+    lpass:'كلمة مرور الغرفة (اختياري)',
+    or:'أو', joinbtn:'ادخل الشات 🚀', createbtn:'أنشئ غرفة جديدة ✨',
+    empty:'لا رسائل بعد — ابدأ المحادثة!',
+    online:'أونلاين', newmsgs:'↓ رسائل جديدة',
+    errnm:'أدخل اسمك', errroom:'الكود 6 خانات',
+    errpass:'كلمة المرور خاطئة', errnoroom:'الغرفة غير موجودة',
+    joined:'انضم للغرفة', left:'غادر الغرفة',
+    copied:'تم نسخ الكود!', sent:'تم الإرسال',
+    confirm:'تأكيد', cancel:'إلغاء',
+    leaveq:'هل تريد مغادرة الغرفة؟', yes:'نعم',
+    delq:'حذف هذه الرسالة؟', del:'حذف',
+    edit:'تعديل', reply:'رد', react:'تفاعل',
+    edited:'(معدّل)', placeholder:'اكتب رسالة...',
+    replyto:'ردًا على',
+    admin:'👑 أدمن', kick:'طرد', mute:'كتم', unmute:'رفع الكتم',
+    kickq:'طرد هذا العضو؟', kickdone:'تم الطرد',
+    mutedone:'تم الكتم', unmutedone:'تم رفع الكتم',
+    locked:'🔒 الغرفة مقفلة', unlocked:'🔓 الغرفة مفتوحة',
+    lockroom:'قفل الغرفة', unlockroom:'فتح الغرفة',
+    roomlocked:'الغرفة مقفلة، لا يمكن الدخول',
+    muted:'أنت مكتوم، لا يمكنك الإرسال',
+    renameroom:'تغيير اسم الغرفة', newname:'الاسم الجديد'
+  },
+  en:{
+    sub:'Instant chat with your friends — any device',
+    lname:'Your Name', lroom:'Room Code (to join)',
+    lpass:'Room Password (optional)',
+    or:'or', joinbtn:'Join Chat 🚀', createbtn:'Create New Room ✨',
+    empty:'No messages yet — start chatting!',
+    online:'online', newmsgs:'↓ New Messages',
+    errnm:'Enter your name', errroom:'Code must be 6 chars',
+    errpass:'Wrong password', errnoroom:'Room not found',
+    joined:'joined the room', left:'left the room',
+    copied:'Code copied!', sent:'Sent',
+    confirm:'Confirm', cancel:'Cancel',
+    leaveq:'Leave the room?', yes:'Yes',
+    delq:'Delete this message?', del:'Delete',
+    edit:'Edit', reply:'Reply', react:'React',
+    edited:'(edited)', placeholder:'Type a message...',
+    replyto:'Reply to'
+  },
+  fr:{
+    sub:'Chat instantané avec tes amis — n\'importe quel appareil',
+    lname:'Ton nom', lroom:'Code de salle (pour rejoindre)',
+    lpass:'Mot de passe (optionnel)',
+    or:'ou', joinbtn:'Rejoindre 🚀', createbtn:'Créer une salle ✨',
+    empty:'Aucun message — commencez à chatter!',
+    online:'en ligne', newmsgs:'↓ Nouveaux messages',
+    errnm:'Entre ton nom', errroom:'Code: 6 caractères',
+    errpass:'Mauvais mot de passe', errnoroom:'Salle introuvable',
+    joined:'a rejoint', left:'a quitté',
+    copied:'Code copié!', sent:'Envoyé',
+    confirm:'Confirmer', cancel:'Annuler',
+    leaveq:'Quitter la salle?', yes:'Oui',
+    delq:'Supprimer ce message?', del:'Supprimer',
+    edit:'Modifier', reply:'Répondre', react:'Réagir',
+    edited:'(modifié)', placeholder:'Écrire un message...',
+    replyto:'En réponse à'
+  }
+};
+let lang = localStorage.getItem('lang') || 'ar';
+let L = LANGS[lang];
+
+function setLang(l) {
+  lang = l; L = LANGS[l];
+  localStorage.setItem('lang', l);
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('lbtn_' + l).classList.add('active');
+  const isRtl = l === 'ar';
+  document.documentElement.lang = l;
+  document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
+  document.body.classList.toggle('ltr', !isRtl);
+  applyLang();
+}
+
+function applyLang() {
+  const s = id => document.getElementById(id);
+  s('txt_sub').textContent = L.sub;
+  s('txt_lname').textContent = L.lname;
+  s('txt_lroom').textContent = L.lroom;
+  s('txt_lpass').textContent = L.lpass;
+  s('txt_or').innerHTML = `<span>${L.or}</span>`;
+  s('joinbtn').textContent = L.joinbtn;
+  s('createbtn').textContent = L.createbtn;
+  s('txt_empty').textContent = L.empty;
+  s('txt_online').textContent = L.online;
+  s('scrbtn').textContent = L.newmsgs;
+  s('minput').placeholder = L.placeholder;
+  s('cmok').textContent = L.confirm;
+}
+
+// ========== THEME ==========
+function toggleTheme() {
+  const b = document.body;
+  const isDark = b.getAttribute('data-theme') === 'dark';
+  b.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  const icon = isDark ? '☀️' : '🌙';
+  document.getElementById('themebtn').textContent = icon;
+  const rb = document.getElementById('roomThemeBtn');
+  if (rb) rb.textContent = icon;
+  localStorage.setItem('theme', isDark ? 'light' : 'dark');
+}
+
+// ========== UTILS ==========
+let toastT;
+function showToast(msg, type='ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast ${type} show`;
+  clearTimeout(toastT);
+  toastT = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function updPstr(v) {
+  const p = document.getElementById('pstr');
+  p.className = 'pstr' + (v.length === 0 ? '' : v.length < 6 ? ' w' : v.length < 12 ? ' f' : ' s');
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+function scrollBot(force=false) {
+  const m = document.getElementById('messages');
+  if (force || atBottom) m.scrollTop = m.scrollHeight;
+}
+
+function copyCode() {
+  navigator.clipboard.writeText(roomId).then(() => showToast(L.copied));
+}
+
+function genCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({length:6}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+}
+
+function fmtTime(ts) {
+  if (!ts) return '';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+}
+
+// ========== AVATAR PICKER ==========
+document.querySelectorAll('.av-opt').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.av-opt').forEach(x => x.classList.remove('sel'));
+    el.classList.add('sel');
+    myAvatar = el.dataset.e;
+    // Update big preview
+    const emoji = document.getElementById('avatarEmoji');
+    const img = document.getElementById('avatarImg');
+    if (emoji) { emoji.textContent = myAvatar; emoji.style.display = 'block'; }
+    if (img) img.style.display = 'none';
+    avatarFile = null; // clear uploaded photo
+  });
+});
+
+// ========== PASSWORD STRENGTH ==========
+function updPstr(v) {
+  const p = document.getElementById('pstr');
+  p.className = 'pstr' + (v.length===0?'':v.length<6?' w':v.length<12?' f':' s');
+}
+
+// ========== PRESENCE ==========
+async function setPresence(online) {
+  if (!roomId) return;
+  try {
+    const ref = db.collection('rooms').doc(roomId)
+      .collection('members').doc(myId);
+    if (online) {
+      await ref.set({name:myName, avatar:myAvatar, ts:firebase.firestore.FieldValue.serverTimestamp()});
+    } else {
+      await ref.delete();
+    }
+  } catch(e){}
+}
+
+// ========== JOIN / CREATE ==========
+async function doJoin() {
+  const nm = document.getElementById('uname').value.trim();
+  const rc = document.getElementById('roomid').value.trim();
+  const ps = document.getElementById('passin').value;
+
+  let ok = true;
+  const eName = document.getElementById('err_name');
+  const eRoom = document.getElementById('err_room');
+  eName.classList.remove('show'); eRoom.classList.remove('show');
+  document.getElementById('uname').classList.remove('err');
+  document.getElementById('roomid').classList.remove('err');
+
+  if (!nm) {
+    eName.textContent = L.errnm; eName.classList.add('show');
+    document.getElementById('uname').classList.add('err'); ok=false;
+  }
+  if (rc.length !== 6) {
+    eRoom.textContent = L.errroom; eRoom.classList.add('show');
+    document.getElementById('roomid').classList.add('err'); ok=false;
+  }
+  if (!ok) return;
+
+  const btn = document.getElementById('joinbtn');
+  btn.disabled = true; btn.textContent = '...';
+
+  try {
+    const snap = await db.collection('rooms').doc(rc).get();
+    if (!snap.exists) {
+      eRoom.textContent = L.errnoroom; eRoom.classList.add('show');
+      document.getElementById('roomid').classList.add('err');
+      btn.disabled=false; btn.textContent=L.joinbtn; return;
+    }
+    const data = snap.data();
+    if (data.locked) {
+      eRoom.textContent = L.roomlocked || 'الغرفة مقفلة';
+      eRoom.classList.add('show');
+      document.getElementById('roomid').classList.add('err');
+      btn.disabled=false; btn.textContent=L.joinbtn; return;
+    }
+    if (data.password && data.password !== ps) {
+      eRoom.textContent = L.errpass; eRoom.classList.add('show');
+      document.getElementById('roomid').classList.add('err');
+      btn.disabled=false; btn.textContent=L.joinbtn; return;
+    }
+    myName = nm; roomId = rc; roomPass = ps;
+    myAvatar = document.querySelector('.av-opt.sel')?.dataset.e || '😎';
+    enterRoom(data.name || rc);
+  } catch(e) {
+    showToast('خطأ: ' + e.message, 'err');
+    btn.disabled=false; btn.textContent=L.joinbtn;
+  }
+}
+
+async function doCreate() {
+  const nm = document.getElementById('uname').value.trim();
+  const ps = document.getElementById('passin').value;
+
+  const eName = document.getElementById('err_name');
+  eName.classList.remove('show');
+  document.getElementById('uname').classList.remove('err');
+
+  if (!nm) {
+    eName.textContent = L.errnm; eName.classList.add('show');
+    document.getElementById('uname').classList.add('err'); return;
+  }
+
+  const btn = document.getElementById('createbtn');
+  btn.disabled=true; btn.textContent='...';
+
+  try {
+    const code = genCode();
+    await db.collection('rooms').doc(code).set({
+      name: nm + "'s room",
+      password: ps,
+      adminId: myId,
+      locked: false,
+      muted: {},
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      createdBy: myId
+    });
+    myName = nm; roomId = code; roomPass = ps;
+    myAvatar = document.querySelector('.av-opt.sel')?.dataset.e || '😎';
+    document.getElementById('roomid').value = code;
+    enterRoom(nm + "'s room");
+  } catch(e) {
+    showToast('خطأ: ' + e.message, 'err');
+    btn.disabled=false; btn.textContent=L.createbtn;
+  }
+}
+
+// ========== ENTER ROOM ==========
+function enterRoom(rname) {
+  document.getElementById('joinScreen').classList.remove('active');
+  document.getElementById('roomScreen').classList.add('active');
+  document.getElementById('rname').textContent = rname;
+  document.getElementById('rcode').textContent = roomId;
+
+  document.getElementById('messages').innerHTML = '<div class="empty" id="emptyState"><div style="font-size:2.5rem">💬</div><div id="txt_empty">' + L.empty + '</div></div>';
+  document.getElementById('joinbtn').disabled=false;
+  document.getElementById('joinbtn').textContent=L.joinbtn;
+  document.getElementById('createbtn').disabled=false;
+  document.getElementById('createbtn').textContent=L.createbtn;
+
+  setPresence(true);
+  listenRoom();
+  listenMembers();
+  listenMessages();
+  buildEmojiPicker();
+
+  window.addEventListener('beforeunload', () => setPresence(false));
+
+  const msgs = document.getElementById('messages');
+  msgs.addEventListener('scroll', () => {
+    atBottom = msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight < 60;
+    const scrbtn = document.getElementById('scrbtn');
+    if (scrbtn && atBottom) scrbtn.style.display = 'none';
+  });
+}
+
+// Listen to room data (admin, lock, mute)
+function listenRoom() {
+  db.collection('rooms').doc(roomId).onSnapshot(snap => {
+    if (!snap.exists) return;
+    const data = snap.data();
+    isAdmin = data.adminId === myId;
+    roomLocked = data.locked || false;
+    mutedUsers = data.muted || {};
+
+    // Show admin button
+    const adminBtn = document.getElementById('adminBtn');
+    if (adminBtn) adminBtn.style.display = isAdmin ? 'flex' : 'none';
+
+    // Update room name
+    const rname = document.getElementById('rname');
+    if (data.name && rname) rname.textContent = data.name;
+
+    // Lock button text
+    const lb = document.getElementById('lockBtn');
+    if (lb) lb.textContent = roomLocked ? '🔓 فتح' : '🔒 قفل';
+
+    // If muted, disable input
+    const inp = document.getElementById('minput');
+    const sbtn = document.querySelector('.sbtn');
+    if (!inp || !sbtn) return;
+    if (mutedUsers[myId] && !isAdmin) {
+      inp.disabled = true; inp.placeholder = L.muted || 'أنت مكتوم';
+      sbtn.disabled = true;
+    } else {
+      inp.disabled = false; inp.placeholder = L.placeholder;
+      sbtn.disabled = false;
+    }
+  });
+}
+
+// ========== LEAVE ==========
+function doLeave() {
+  showConfirm(L.leaveq, L.yes, async () => {
+    await setPresence(false);
+    if (unsubMsgs) { unsubMsgs(); unsubMsgs=null; }
+    if (unsubRoom) { unsubRoom(); unsubRoom=null; }
+    // sys msg
+    try {
+      await db.collection('rooms').doc(roomId).collection('messages').add({
+        type:'sys', text: myAvatar + ' ' + myName + ' ' + L.left,
+        ts: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    } catch(e){}
+    roomId=''; replyTo=null; editingId=null; isAdmin=false;
+    document.getElementById('roomScreen').classList.remove('active');
+    document.getElementById('joinScreen').classList.add('active');
+    document.getElementById('minput').value='';
+    document.getElementById('rplybar').classList.remove('show');
+  });
+}
+
+// ========== MEMBERS ==========
+function listenMembers() {
+  if (unsubRoom) unsubRoom();
+  unsubRoom = db.collection('rooms').doc(roomId).collection('members')
+    .onSnapshot(snap => {
+      const strip = document.getElementById('mstrip');
+      strip.innerHTML = '';
+      document.getElementById('ocnt').textContent = snap.size;
+      snap.docs.forEach(d => {
+        const data = d.data();
+        const isMe = d.id === myId;
+        const chip = document.createElement('div');
+        chip.className = 'mchip' + (isMe ? ' me' : '');
+        chip.style.cursor = isAdmin && !isMe ? 'pointer' : 'default';
+        chip.innerHTML = `<span>${data.avatar||'😎'}</span><span>${data.name}</span>${mutedUsers[d.id]?'🔇':''}`;
+        if (isAdmin && !isMe) {
+          chip.onclick = () => showMemberActions(d.id, data.name);
+        }
+        strip.appendChild(chip);
+      });
+    });
+}
+
+// ========== MESSAGES ==========
+let lastMsgCount = 0;
+
+function listenMessages() {
+  if (unsubMsgs) unsubMsgs();
+  unsubMsgs = db.collection('rooms').doc(roomId).collection('messages')
+    .orderBy('ts')
+    .onSnapshot(snap => {
+      const msgs = document.getElementById('messages');
+      const empty = document.getElementById('emptyState');
+      if (snap.empty) {
+        if (!empty) msgs.innerHTML = '<div class="empty" id="emptyState"><div style="font-size:2.5rem">💬</div><div>' + L.empty + '</div></div>';
+        return;
+      }
+      if (empty) empty.remove();
+
+      // Re-render all (simple approach for small chats)
+      msgs.innerHTML = '';
+      snap.docs.forEach(d => {
+        const data = d.data();
+        if (data.type === 'sys') {
+          const el = document.createElement('div');
+          el.className = 'sysmsg';
+          el.textContent = data.text;
+          msgs.appendChild(el);
+        } else {
+          msgs.appendChild(buildMsgEl(d.id, data));
+        }
+      });
+
+      if (snap.size > lastMsgCount && !atBottom) {
+        document.getElementById('scrbtn').style.display = 'block';
+      } else {
+        scrollBot();
+      }
+      lastMsgCount = snap.size;
+    });
+}
+
+function buildMsgEl(id, data) {
+  const isMe = data.uid === myId;
+  const row = document.createElement('div');
+  row.className = 'mrow' + (isMe ? ' me' : '');
+  row.dataset.id = id;
+
+  const av = document.createElement('div');
+  av.className = 'mav';
+  av.textContent = data.avatar || '😎';
+
+  const wrap = document.createElement('div');
+  wrap.className = 'mwrap';
+
+  if (!isMe) {
+    const sender = document.createElement('div');
+    sender.className = 'msender';
+    sender.textContent = data.name;
+    wrap.appendChild(sender);
+  }
+
+  const bubble = document.createElement('div');
+  bubble.className = 'mbubble';
+  bubble.tabIndex = 0;
+
+  // Reply preview
+  if (data.replyTo) {
+    const rp = document.createElement('div');
+    rp.className = 'rplyprv';
+    rp.textContent = L.replyto + ': ' + (data.replyToText || '...');
+    bubble.appendChild(rp);
+  }
+
+  // Text or Image
+  if (data.type === 'image') {
+    const img = document.createElement('img');
+    img.className = 'msgimg';
+    img.src = data.imageUrl;
+    img.loading = 'lazy';
+    img.onclick = () => window.open(data.imageUrl, '_blank');
+    bubble.appendChild(img);
+  } else {
+    const txt = document.createElement('span');
+    if (data.edited) {
+      const em = document.createElement('span');
+      em.className = 'editmark';
+      em.textContent = L.edited + ' ';
+      txt.appendChild(em);
+    }
+    txt.appendChild(document.createTextNode(data.text));
+    bubble.appendChild(txt);
+  }
+
+  // Actions popup
+  const canDelete = isMe || isAdmin;
+  const pop = document.createElement('div');
+  pop.className = 'macpop';
+  pop.innerHTML = `
+    <button onclick="startReply('${id}',\`${(data.text||'').replace(/`/g,"'")}\`)">↩ ${L.reply}</button>
+    <button onclick="openRxnPop(event,'${id}')">❤️ ${L.react}</button>
+    ${isMe ? `<button onclick="startEdit('${id}',\`${(data.text||'').replace(/`/g,"'")}\`)">✏️ ${L.edit}</button>` : ''}
+    ${canDelete ? `<button onclick="deleteMsg('${id}')" style="color:#ff6b9d">🗑 حذف</button>` : ''}
+  `;
+  bubble.appendChild(pop);
+
+  wrap.appendChild(bubble);
+
+  // Time
+  const time = document.createElement('div');
+  time.className = 'mtime';
+  time.textContent = fmtTime(data.ts);
+  wrap.appendChild(time);
+
+  // Reactions
+  if (data.reactions && Object.keys(data.reactions).length > 0) {
+    const rxns = document.createElement('div');
+    rxns.className = 'rxns';
+    const counts = {};
+    const myRxns = new Set();
+    Object.entries(data.reactions).forEach(([uid, emj]) => {
+      counts[emj] = (counts[emj]||0) + 1;
+      if (uid === myId) myRxns.add(emj);
+    });
+    Object.entries(counts).forEach(([emj, cnt]) => {
+      const chip = document.createElement('span');
+      chip.className = 'rxnchip' + (myRxns.has(emj) ? ' mine' : '');
+      chip.textContent = emj + (cnt > 1 ? ' ' + cnt : '');
+      chip.onclick = () => toggleRxn(id, emj, data.reactions);
+      rxns.appendChild(chip);
+    });
+    wrap.appendChild(rxns);
+  }
+
+  row.appendChild(av);
+  row.appendChild(wrap);
+  return row;
+}
+
+// ========== SEND IMAGE ==========
+async function sendImage(e) {
+  const file = e.target.files[0];
+  if (!file || !roomId) return;
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('الصورة أكبر من 5MB', 'err'); return;
+  }
+  showToast('جاري رفع الصورة...', 'ok');
+  try {
+    const ref = storage.ref('chats/' + roomId + '/' + Date.now() + '_' + file.name);
+    const snap = await ref.put(file);
+    const url = await snap.ref.getDownloadURL();
+    await db.collection('rooms').doc(roomId).collection('messages').add({
+      uid: myId, name: myName, avatar: myAvatar,
+      type: 'image', imageUrl: url,
+      ts: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('تم إرسال الصورة ✅', 'ok');
+  } catch(err) {
+    showToast('فشل رفع الصورة', 'err');
+  }
+  e.target.value = '';
+}
+
+// ========== SEND MESSAGE ==========
+async function sendMsg() {
+  const inp = document.getElementById('minput');
+  const txt = inp.value.trim();
+  if (!txt || !roomId) return;
+
+  if (editingId) {
+    // Edit mode
+    try {
+      await db.collection('rooms').doc(roomId).collection('messages').doc(editingId).update({
+        text: txt, edited: true
+      });
+      editingId = null;
+      inp.value = ''; inp.style.height='auto';
+      inp.placeholder = L.placeholder;
+    } catch(e) { showToast('خطأ', 'err'); }
+    return;
+  }
+
+  const msgData = {
+    uid: myId, name: myName, avatar: myAvatar,
+    text: txt, ts: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  if (replyTo) {
+    msgData.replyTo = replyTo.id;
+    msgData.replyToText = replyTo.text;
+  }
+
+  try {
+    await db.collection('rooms').doc(roomId).collection('messages').add(msgData);
+    inp.value=''; inp.style.height='auto';
+    replyTo=null;
+    document.getElementById('rplybar').classList.remove('show');
+    stopTyping();
+  } catch(e) { showToast('خطأ في الإرسال', 'err'); }
+}
+
+function handleKey(e) {
+  if (e.key==='Enter' && !e.shiftKey) {
+    e.preventDefault(); sendMsg();
+  }
+}
+
+// ========== EDIT / DELETE / REPLY ==========
+function startEdit(id, text) {
+  editingId = id;
+  const inp = document.getElementById('minput');
+  inp.value = text; inp.placeholder = '✏️ وضع التعديل...';
+  inp.focus(); autoResize(inp);
+}
+
+function startReply(id, text) {
+  replyTo = {id, text};
+  document.getElementById('rplytext').textContent = text.slice(0,60);
+  document.getElementById('rplybar').classList.add('show');
+  document.getElementById('minput').focus();
+}
+
+function clearReply() {
+  replyTo=null;
+  document.getElementById('rplybar').classList.remove('show');
+  if (editingId) { editingId=null; document.getElementById('minput').placeholder=L.placeholder; }
+}
+
+async function deleteMsg(id) {
+  showConfirm(L.delq, '🗑 ' + (L.del||'حذف'), async () => {
+    try {
+      await db.collection('rooms').doc(roomId).collection('messages').doc(id).delete();
+    } catch(e) { showToast('خطأ', 'err'); }
+  });
+}
+
+// ========== REACTIONS ==========
+let rxnTarget = null;
+
+function openRxnPop(e, msgId) {
+  e.stopPropagation();
+  rxnTarget = msgId;
+  const pop = document.getElementById('rxnpop');
+  pop.classList.add('open');
+  const x = Math.min(e.clientX, window.innerWidth - 250);
+  const y = Math.max(e.clientY - 60, 10);
+  pop.style.left = x + 'px'; pop.style.top = y + 'px';
+}
+
+async function doRxn(emj) {
+  document.getElementById('rxnpop').classList.remove('open');
+  if (!rxnTarget) return;
+  try {
+    const ref = db.collection('rooms').doc(roomId).collection('messages').doc(rxnTarget);
+    const snap = await ref.get();
+    const rxns = (snap.data()?.reactions || {});
+    if (rxns[myId] === emj) delete rxns[myId];
+    else rxns[myId] = emj;
+    await ref.update({reactions: rxns});
+  } catch(e){}
+  rxnTarget = null;
+}
+
+async function toggleRxn(id, emj, rxns) {
+  try {
+    const ref = db.collection('rooms').doc(roomId).collection('messages').doc(id);
+    const newRxns = {...rxns};
+    if (newRxns[myId] === emj) delete newRxns[myId];
+    else newRxns[myId] = emj;
+    await ref.update({reactions: newRxns});
+  } catch(e){}
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#rxnpop')) {
+    document.getElementById('rxnpop').classList.remove('open');
+  }
+  if (!e.target.closest('.iarea')) {
+    document.getElementById('epicker').classList.remove('open');
+  }
+});
+
+// ========== TYPING INDICATOR ==========
+function handleTyping() {
+  if (!roomId) return;
+  db.collection('rooms').doc(roomId).collection('typing').doc(myId)
+    .set({name:myName, ts:firebase.firestore.FieldValue.serverTimestamp()}).catch(()=>{});
+  clearTimeout(typingTimer);
+  typingTimer = setTimeout(stopTyping, 2000);
+}
+
+function stopTyping() {
+  if (!roomId) return;
+  db.collection('rooms').doc(roomId).collection('typing').doc(myId).delete().catch(()=>{});
+}
+
+// Listen to typing (optional, lightweight)
+let unsubTyping = null;
+function listenTyping() {
+  if (unsubTyping) unsubTyping();
+  unsubTyping = db.collection('rooms').doc(roomId).collection('typing')
+    .onSnapshot(snap => {
+      const others = snap.docs.filter(d => d.id !== myId).map(d => d.data().name);
+      const tbar = document.getElementById('tbar');
+      tbar.textContent = others.length ? others.join(', ') + (lang==='ar' ? ' يكتب...' : lang==='fr' ? ' écrit...' : ' typing...') : '';
+    });
+}
+
+// ========== EMOJI PICKER ==========
+const EMOJIS = ['😀','😂','🥰','😍','🤩','😎','🥳','😜','🤔','😱','😭','🙏',
+  '👍','👎','❤️','🔥','💯','✅','🎉','🎊','💪','🤝','👏','🙌',
+  '😊','😉','🤗','😇','🥺','😤','💀','👻','🤖','🦊','🐱','🎮',
+  '🍕','🎵','⚡','🌟','💎','🚀','🌈','💬','📱','💻'];
+
+function buildEmojiPicker() {
+  const ep = document.getElementById('epicker');
+  ep.innerHTML = '';
+  EMOJIS.forEach(e => {
+    const s = document.createElement('span');
+    s.className = 'eitem'; s.textContent = e;
+    s.onclick = () => {
+      const inp = document.getElementById('minput');
+      inp.value += e; inp.focus(); autoResize(inp);
+      document.getElementById('epicker').classList.remove('open');
+    };
+    ep.appendChild(s);
+  });
+}
+
+function toggleEmoji() {
+  document.getElementById('epicker').classList.toggle('open');
+}
+
+// ========== CONFIRM MODAL ==========
+function showConfirm(msg, okText, cb) {
+  const modal = document.getElementById('cmodal');
+  document.getElementById('cmmsg').textContent = msg;
+  const okBtn = document.getElementById('cmok');
+  okBtn.textContent = okText;
+  modal.classList.add('open');
+  const handler = () => {
+    modal.classList.remove('open');
+    okBtn.removeEventListener('click', handler);
+    cb();
+  };
+  okBtn.addEventListener('click', handler);
+}
+
+// ========== ADMIN FUNCTIONS ==========
+function toggleAdminPanel() {
+  const p = document.getElementById('adminPanel');
+  p.style.display = p.style.display === 'none' ? 'flex' : 'none';
+}
+
+function showMemberActions(uid, name) {
+  const isMuted = mutedUsers[uid];
+  showConfirm(
+    `${name} — اختر الإجراء:`,
+    isMuted ? `🔊 ${L.unmute||'رفع الكتم'}` : `🔇 ${L.mute||'كتم'}`,
+    () => adminToggleMute(uid)
+  );
+  // Also offer kick via second button
+  setTimeout(() => {
+    const okBtn = document.getElementById('cmok');
+    const modal = document.getElementById('cmodal');
+    if (!modal.classList.contains('open')) return;
+    // Add kick button
+    if (!document.getElementById('kickExtraBtn')) {
+      const kb = document.createElement('button');
+      kb.id = 'kickExtraBtn';
+      kb.className = 'btn2';
+      kb.style = 'padding:10px;color:#ff6b9d;border-color:#ff6b9d';
+      kb.textContent = `👢 ${L.kick||'طرد'}`;
+      kb.onclick = () => {
+        modal.classList.remove('open');
+        kb.remove();
+        adminKick(uid, name);
+      };
+      okBtn.parentNode.appendChild(kb);
+    }
+  }, 50);
+}
+
+async function adminKick(uid, name) {
+  showConfirm(L.kickq || 'طرد هذا العضو؟', `👢 ${L.kick||'طرد'}`, async () => {
+    try {
+      await db.collection('rooms').doc(roomId).collection('members').doc(uid).delete();
+      await db.collection('rooms').doc(roomId).collection('messages').add({
+        type:'sys', text:`👢 تم طرد ${name} من الغرفة`,
+        ts: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      showToast(L.kickdone || 'تم الطرد', 'ok');
+    } catch(e) { showToast('خطأ', 'err'); }
+  });
+}
+
+async function adminToggleMute(uid) {
+  try {
+    const newMuted = {...mutedUsers};
+    if (newMuted[uid]) {
+      delete newMuted[uid];
+      showToast(L.unmutedone || 'تم رفع الكتم', 'ok');
+    } else {
+      newMuted[uid] = true;
+      showToast(L.mutedone || 'تم الكتم', 'ok');
+    }
+    await db.collection('rooms').doc(roomId).update({muted: newMuted});
+  } catch(e) { showToast('خطأ', 'err'); }
+}
+
+async function adminToggleLock() {
+  try {
+    await db.collection('rooms').doc(roomId).update({locked: !roomLocked});
+    showToast(!roomLocked ? L.locked||'🔒 الغرفة مقفلة' : L.unlocked||'🔓 الغرفة مفتوحة', 'ok');
+  } catch(e) { showToast('خطأ', 'err'); }
+}
+
+async function adminRename() {
+  const newName = prompt(L.renameroom || 'اسم الغرفة الجديد:');
+  if (!newName || !newName.trim()) return;
+  try {
+    await db.collection('rooms').doc(roomId).update({name: newName.trim()});
+    showToast('تم تغيير الاسم ✅', 'ok');
+  } catch(e) { showToast('خطأ', 'err'); }
+}
+
+async function adminClearAll() {
+  showConfirm('حذف جميع الرسائل؟ لا يمكن التراجع!', '🗑 حذف الكل', async () => {
+    try {
+      const snap = await db.collection('rooms').doc(roomId).collection('messages').get();
+      const batch = db.batch();
+      snap.docs.forEach(d => batch.delete(d.ref));
+      await batch.commit();
+      showToast('تم حذف كل الرسائل', 'ok');
+    } catch(e) { showToast('خطأ', 'err'); }
+  });
+}
+
+// ========== PWA Service Worker ==========
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+
+(function init() {
+  // Theme
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  document.body.setAttribute('data-theme', savedTheme);
+  const moonIcon = savedTheme === 'dark' ? '🌙' : '☀️';
+  document.getElementById('themebtn').textContent = moonIcon;
+
+  // Lang
+  setLang(lang);
+
+  // Enter on uname/roomid
+  ['uname','roomid','passin'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') doJoin();
+    });
+  });
+})();
+</script>
+</body>
+</html>
